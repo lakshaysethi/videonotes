@@ -15,12 +15,15 @@
 This code is based on experimental APIs and is subject to change.
 """
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 __author__ = 'afshar@google.com (Ali Afshar)'
 
 import binascii
 import collections
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 SUBSCRIBE = 'X-GOOG-SUBSCRIBE'
 SUBSCRIPTION_ID = 'X-GOOG-SUBSCRIPTION-ID'
@@ -67,7 +70,7 @@ class Channel(object):
     Returns:
       str encoded channel description suitable for use as a header.
     """
-    return '%s?%s' % (self.channel_type, urllib.urlencode(self.channel_args))
+    return '%s?%s' % (self.channel_type, urllib.parse.urlencode(self.channel_args))
 
   def write_header(self, headers):
     """Write the appropriate subscribe header to a headers dict.
@@ -157,7 +160,7 @@ class Headers(collections.defaultdict):
     Args:
       headers: dict of headers to insert values into.
     """
-    for header, value in self.items():
+    for header, value in list(self.items()):
       headers[header.lower()] = value
 
   def read(self, headers):

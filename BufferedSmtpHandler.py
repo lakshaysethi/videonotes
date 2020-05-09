@@ -1,3 +1,4 @@
+from __future__ import print_function
 __author__ = 'arnaud'
 
 #!/usr/bin/env python
@@ -45,9 +46,9 @@ class BufferingSMTPHandler(logging.handlers.BufferingHandler):
                 msg = ""
                 for record in self.buffer:
                     s = self.format(record)
-                    print s
+                    print(s)
                     msg = msg + s + "\r\n"
                 mail.send_mail(self.fromaddr,self.toaddrs, "Error in VideoNot.es", msg)
-            except Exception, e:
+            except Exception as e:
                 self.handleError(None)  # no particular record
             self.buffer = []

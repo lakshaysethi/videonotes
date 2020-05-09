@@ -17,6 +17,7 @@
 # under the License.
 #
 
+from builtins import object
 from thrift.Thrift import *
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTransport
@@ -64,9 +65,9 @@ class TExceptionBase(Exception):
   #  This can't inherit from TBase because of that limitation.
   __slots__ = []
   
-  __repr__ = TBase.__repr__.im_func
-  __eq__ = TBase.__eq__.im_func
-  __ne__ = TBase.__ne__.im_func
-  read = TBase.read.im_func
-  write = TBase.write.im_func
+  __repr__ = TBase.__repr__.__func__
+  __eq__ = TBase.__eq__.__func__
+  __ne__ = TBase.__ne__.__func__
+  read = TBase.read.__func__
+  write = TBase.write.__func__
   

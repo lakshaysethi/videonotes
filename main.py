@@ -15,6 +15,12 @@
 # limitations under the License.
 
 # Add the library location to the path
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 sys.path.insert(0, 'lib')
 
@@ -30,7 +36,7 @@ import random
 from google.appengine.api import urlfetch
 import time
 from BufferedSmtpHandler import BufferingSMTPHandler
-from httplib import HTTPException
+from http.client import HTTPException
 from apiclient.errors import HttpError
 import webapp2
 from apiclient.http import MediaUpload
@@ -258,17 +264,17 @@ class ServiceHandler(BaseDriveHandler):
                 # to authorize.
                 logging.info('AccessTokenRefreshError')
                 return self.abort(401)
-            except HttpError, http_error:
+            except HttpError as http_error:
                 logging.getLogger("error").exception("Try #%d: Exception occurred when creating file", n)
                 # HTTP status code 403 indicates that the app is not authorized to save the file (third-party app disabled, user without access, etc.)
                 # Don't need to try several times
                 if http_error.resp.status == 403:
                     return self.abort(403)
                 else:
-                    time.sleep((2 ** n) + (random.randint(0, 1000) / 1000))
+                    time.sleep((2 ** n) + (old_div(random.randint(0, 1000), 1000)))
             except HTTPException:
                 logging.getLogger("error").exception("Try #%d: Exception occurred when creating file", n)
-                time.sleep((2 ** n) + (random.randint(0, 1000) / 1000))
+                time.sleep((2 ** n) + (old_div(random.randint(0, 1000), 1000)))
 
         logging.getLogger("error").exception("Exception occurred when creating file after %d tries", max_try)
         return self.abort(500)
@@ -323,17 +329,17 @@ class ServiceHandler(BaseDriveHandler):
                         body=data).execute()
                     # Respond with the new file id as JSON.
                 return self.RespondJSON({'id': resource['id']})
-            except HttpError, http_error:
+            except HttpError as http_error:
                 logging.getLogger("error").exception("Try #%d: Exception occurred when updating file", n)
                 # HTTP status code 403 indicates that the app is not authorized to save the file (third-party app disabled, user without access, etc.)
                 # Don't need to try several times
                 if http_error.resp.status == 403:
                     return self.abort(403)
                 else:
-                    time.sleep((2 ** n) + (random.randint(0, 1000) / 1000))
+                    time.sleep((2 ** n) + (old_div(random.randint(0, 1000), 1000)))
             except HTTPException:
                 logging.getLogger("error").exception("Try #%d: Exception occurred when updating file", n)
-                time.sleep((2 ** n) + (random.randint(0, 1000) / 1000))
+                time.sleep((2 ** n) + (old_div(random.randint(0, 1000), 1000)))
             except AccessTokenRefreshError:
                 # Catch AccessTokenRefreshError which occurs when the API client library
                 # fails to refresh a token. This occurs, for example, when a refresh token

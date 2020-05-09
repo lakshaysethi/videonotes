@@ -59,3 +59,7 @@ node_modules/
 
 # Mac OSX
 .DS_Store
+venv/Lib/site-packages/argparse-1.4.0.dist-info/RECORD
+
+venv/
+*.bak

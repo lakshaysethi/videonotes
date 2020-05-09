@@ -1,4 +1,9 @@
-import Cookie
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import object
+import http.cookies
 import datetime
 import time
 import email.utils
@@ -22,11 +27,11 @@ import re
 # cookieutil = LilCookies(self, application_settings['cookie_secret'])
 # cookieutil.set_secure_cookie(name = 'mykey', value = 'myvalue', expires_days= 365*100)
 # cookieutil.get_secure_cookie(name = 'mykey')
-class LilCookies:
+class LilCookies(object):
 
   @staticmethod
   def _utf8(s):
-    if isinstance(s, unicode):
+    if isinstance(s, str):
       return s.encode("utf-8")
     assert isinstance(s, str)
     return s
@@ -92,7 +97,7 @@ class LilCookies:
   def cookies(self):
     """A dictionary of Cookie.Morsel objects."""
     if not hasattr(self, "_cookies"):
-      self._cookies = Cookie.BaseCookie()
+      self._cookies = http.cookies.BaseCookie()
       if "Cookie" in self.request.headers:
         try:
           self._cookies.load(self.request.headers["Cookie"])
@@ -122,7 +127,7 @@ class LilCookies:
       raise ValueError("Invalid cookie %r: %r" % (name, value))
     if not hasattr(self, "_new_cookies"):
       self._new_cookies = []
-    new_cookie = Cookie.BaseCookie()
+    new_cookie = http.cookies.BaseCookie()
     self._new_cookies.append(new_cookie)
     new_cookie[name] = value
     if domain:
@@ -135,11 +140,11 @@ class LilCookies:
         timestamp, localtime=False, usegmt=True)
     if path:
       new_cookie[name]["path"] = path
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
       new_cookie[name][k] = v
 
     # The 2 lines below were not in Tornado.  Instead, they output all their cookies to the headers at once before a response flush.
-    for vals in new_cookie.values():
+    for vals in list(new_cookie.values()):
       self.response.headers._headers.append(('Set-Cookie', vals.OutputString(None)))
 
   def clear_cookie(self, name, path="/", domain=None):
@@ -150,7 +155,7 @@ class LilCookies:
 
   def clear_all_cookies(self):
     """Deletes all the cookies the user sent with this request."""
-    for name in self.cookies().iterkeys():
+    for name in self.cookies().keys():
       self.clear_cookie(name)
 
   def set_secure_cookie(self, name, value, expires_days=30, **kwargs):

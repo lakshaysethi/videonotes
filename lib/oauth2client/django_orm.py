@@ -26,10 +26,9 @@ import pickle
 
 from django.db import models
 from oauth2client.client import Storage as BaseStorage
+from future.utils import with_metaclass
 
-class CredentialsField(models.Field):
-
-  __metaclass__ = models.SubfieldBase
+class CredentialsField(with_metaclass(models.SubfieldBase, models.Field)):
 
   def __init__(self, *args, **kwargs):
     if 'null' not in kwargs:
@@ -52,9 +51,7 @@ class CredentialsField(models.Field):
     return base64.b64encode(pickle.dumps(value))
 
 
-class FlowField(models.Field):
-
-  __metaclass__ = models.SubfieldBase
+class FlowField(with_metaclass(models.SubfieldBase, models.Field)):
 
   def __init__(self, *args, **kwargs):
     if 'null' not in kwargs:

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -17,7 +18,10 @@
 # under the License.
 #
 
-from TProtocol import *
+from builtins import map
+from future.utils import raise_
+from builtins import object
+from .TProtocol import *
 from struct import pack, unpack
 
 __all__ = ['TCompactProtocol', 'TCompactProtocolFactory']
@@ -70,7 +74,7 @@ def readVarint(trans):
       return result
     shift += 7
 
-class CompactType:
+class CompactType(object):
   STOP = 0x00
   TRUE = 0x01
   FALSE = 0x02
@@ -100,7 +104,7 @@ CTYPES = {TType.STOP: CompactType.STOP,
           }
 
 TTYPES = {}
-for k, v in CTYPES.items():
+for k, v in list(CTYPES.items()):
   TTYPES[v] = k
 TTYPES[CompactType.FALSE] = TType.BOOL
 del k
@@ -228,7 +232,7 @@ class TCompactProtocol(TProtocolBase):
        else:
            self.__writeByte(CompactType.FALSE)
     else:
-      raise AssertionError, "Invalid state in compact protocol"
+      raise AssertionError("Invalid state in compact protocol")
 
   writeByte = writer(__writeByte)
   writeI16 = writer(__writeI16)
@@ -364,7 +368,7 @@ class TCompactProtocol(TProtocolBase):
     elif self.state == CONTAINER_READ:
       return self.__readByte() == CompactType.TRUE
     else:
-      raise AssertionError, "Invalid state in compact protocol: %d" % self.state
+      raise_(AssertionError, "Invalid state in compact protocol: %d" % self.state)
 
   readByte = reader(__readByte)
   __readI16 = __readZigZag
@@ -387,7 +391,7 @@ class TCompactProtocol(TProtocolBase):
     return TTYPES[byte & 0x0f]
 
 
-class TCompactProtocolFactory:
+class TCompactProtocolFactory(object):
   def __init__(self):
     pass
 

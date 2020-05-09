@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 __author__ = 'afshar@google.com (Ali Afshar)'
 __author__ = 'arnaud@videonot.es Arnaud BRETON (UniShared)'
 
@@ -27,7 +30,7 @@ sys.path.insert(0, 'lib')
 from apiclient.errors import HttpError
 import httplib2
 from apiclient.discovery import build
-import urlparse
+import urllib.parse
 import webapp2
 from webapp2_extras import jinja2, sessions
 from oauth2client.client import FlowExchangeError, flow_from_clientsecrets
@@ -140,7 +143,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     @staticmethod
     def is_authorized_domain(url):
-        parse = urlparse.urlparse(url)
+        parse = urllib.parse.urlparse(url)
         return parse.netloc in BaseHandler.AUTHORIZED_DOMAINS if parse.netloc != '' else True
 
 class BaseDriveHandler(BaseHandler):

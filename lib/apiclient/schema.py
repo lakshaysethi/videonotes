@@ -59,6 +59,8 @@ The constructor takes a discovery document in which to look up named schema.
 
 # TODO(jcgregorio) support format, enum, minimum, maximum
 
+from builtins import str
+from builtins import object
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import copy
@@ -250,7 +252,7 @@ class _SchemaToStruct(object):
       self.emitEnd('{', schema.get('description', ''))
       self.indent()
       if 'properties' in schema:
-        for pname, pschema in schema.get('properties', {}).iteritems():
+        for pname, pschema in schema.get('properties', {}).items():
           self.emitBegin('"%s": ' % pname)
           self._to_str_impl(pschema)
       elif 'additionalProperties' in schema:

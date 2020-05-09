@@ -18,33 +18,38 @@ The classes implement a command pattern, with every
 object supporting an execute() method that does the
 actuall HTTP request.
 """
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
-import StringIO
+import io
 import base64
 import copy
 import gzip
 import httplib2
-import mimeparse
+from . import mimeparse
 import mimetypes
 import os
 import sys
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import uuid
 
 from email.generator import Generator
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.parser import FeedParser
-from errors import BatchError
-from errors import HttpError
-from errors import InvalidChunkSizeError
-from errors import ResumableUploadError
-from errors import UnexpectedBodyError
-from errors import UnexpectedMethodError
-from model import JsonModel
+from .errors import BatchError
+from .errors import HttpError
+from .errors import InvalidChunkSizeError
+from .errors import ResumableUploadError
+from .errors import UnexpectedBodyError
+from .errors import UnexpectedMethodError
+from .model import JsonModel
 from oauth2client import util
 from oauth2client.anyjson import simplejson
 
@@ -462,7 +467,7 @@ class MediaInMemoryUpload(MediaIoBaseUpload):
     resumable: bool, True if this is a resumable upload. False means upload
       in a single request.
     """
-    fd = StringIO.StringIO(body)
+    fd = io.StringIO(body)
     super(MediaInMemoryUpload, self).__init__(fd, mimetype, chunksize=chunksize,
                                               resumable=resumable)
 
@@ -664,8 +669,8 @@ class HttpRequest(object):
         self.method = 'POST'
         self.headers['x-http-method-override'] = 'GET'
         self.headers['content-type'] = 'application/x-www-form-urlencoded'
-        parsed = urlparse.urlparse(self.uri)
-        self.uri = urlparse.urlunparse(
+        parsed = urllib.parse.urlparse(self.uri)
+        self.uri = urllib.parse.urlunparse(
             (parsed.scheme, parsed.netloc, parsed.path, parsed.params, None,
              None)
             )
@@ -973,7 +978,7 @@ class BatchHttpRequest(object):
     if self._base_id is None:
       self._base_id = uuid.uuid4()
 
-    return '<%s+%s>' % (self._base_id, urllib.quote(id_))
+    return '<%s+%s>' % (self._base_id, urllib.parse.quote(id_))
 
   def _header_to_id(self, header):
     """Convert a Content-ID header value to an id.
@@ -996,7 +1001,7 @@ class BatchHttpRequest(object):
       raise BatchError("Invalid value for Content-ID: %s" % header)
     base, id_ = header[1:-1].rsplit('+', 1)
 
-    return urllib.unquote(id_)
+    return urllib.parse.unquote(id_)
 
   def _serialize_request(self, request):
     """Convert an HttpRequest object into a string.
@@ -1008,8 +1013,8 @@ class BatchHttpRequest(object):
       The request as a string in application/http format.
     """
     # Construct status line
-    parsed = urlparse.urlparse(request.uri)
-    request_line = urlparse.urlunparse(
+    parsed = urllib.parse.urlparse(request.uri)
+    request_line = urllib.parse.urlunparse(
         (None, None, parsed.path, parsed.params, parsed.query, None)
         )
     status_line = request.method + ' ' + request_line + ' HTTP/1.1\n'
@@ -1025,7 +1030,7 @@ class BatchHttpRequest(object):
     if 'content-type' in headers:
       del headers['content-type']
 
-    for key, value in headers.iteritems():
+    for key, value in headers.items():
       msg[key] = value
     msg['Host'] = parsed.netloc
     msg.set_unixfrom(None)
@@ -1035,7 +1040,7 @@ class BatchHttpRequest(object):
       msg['content-length'] = str(len(request.body))
 
     # Serialize the mime message.
-    fp = StringIO.StringIO()
+    fp = io.StringIO()
     # maxheaderlen=0 means don't line wrap headers.
     g = Generator(fp, maxheaderlen=0)
     g.flatten(msg, unixfrom=False)
@@ -1250,7 +1255,7 @@ class BatchHttpRequest(object):
         if resp.status >= 300:
           raise HttpError(resp, content, uri=request.uri)
         response = request.postproc(resp, content)
-      except HttpError, e:
+      except HttpError as e:
         exception = e
 
       if callback is not None:

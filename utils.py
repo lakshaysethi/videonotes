@@ -14,18 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import map
+from builtins import object
 import collections
 from datetime import timedelta, datetime
 import json
 import logging
 import os
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 __author__ = 'afshar@google.com (Ali Afshar)'
 __author__ = 'arnaud@videonot.es Arnaud BRETON (UniShared)'
 
-class FileUtils():
+class FileUtils(object):
     LAST_FILE_VERSION = 2
     SNAPSHOT_KEY = 'snapshot'
 
@@ -178,9 +183,9 @@ class FileUtils():
                         sync_time = flat_sync[i]['time']
 
                         # Adding the Youtube time parameter
-                        url_data = urlparse.urlparse(video_url)
+                        url_data = urllib.parse.urlparse(video_url)
                         if sync_time > 0.01 and any(match in url_data.hostname for match in ['youtube', 'youtu.be']):
-                            query = urlparse.parse_qs(url_data.query)
+                            query = urllib.parse.parse_qs(url_data.query)
                             video_id = query["v"][0]
 
                             sec = timedelta(seconds=sync_time)
@@ -241,12 +246,12 @@ class DriveState(object):
                 self.parent = state_data['folderId']
             else:
                 self.parent = []
-            self.ids = map(str, state_data.get('ids', []))
+            self.ids = list(map(str, state_data.get('ids', [])))
         else:
             self.action = 'create'
             self.parent = []
 
-        logging.debug('Create Drive state, parent %s, action %s', unicode(self.parent) if hasattr(self, 'parent') else None, self.action)
+        logging.debug('Create Drive state, parent %s, action %s', str(self.parent) if hasattr(self, 'parent') else None, self.action)
 
     @classmethod
     def FromRequest(cls, request):
@@ -258,17 +263,17 @@ class DriveState(object):
         """
         return DriveState(request.get('state'))
 
-class UrlUtils():
+class UrlUtils(object):
     @staticmethod
     def add_query_parameter(url, params):
         """
         Add query parameters to an URL
         @return: URL with new parameters
         """
-        url_parts = list(urlparse.urlparse(url))
-        query = dict(urlparse.parse_qsl(url_parts[4]))
+        url_parts = list(urllib.parse.urlparse(url))
+        query = dict(urllib.parse.parse_qsl(url_parts[4]))
         query.update(params)
 
-        url_parts[4] = urllib.urlencode(query)
+        url_parts[4] = urllib.parse.urlencode(query)
 
-        return urlparse.urlunparse(url_parts)
+        return urllib.parse.urlunparse(url_parts)
